@@ -16,3 +16,5 @@ const errorMiddleware = (err, req, res, next) => {
     code: "INTERNAL_SERVER_ERROR",
   });
 };
+
+export default errorMiddleware;

@@ -1,5 +1,5 @@
-import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
+import { hashPassword } from "./password.services.js";
 
 const registerUser = async ({ fullName, email, password }) => {
     if(!fullName || !email || !password) {
@@ -17,12 +17,12 @@ const registerUser = async ({ fullName, email, password }) => {
         throw new Error("User already exists");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     const user = await User.create({
         fullName,
         email,
-        password: hashedPassword
+        password: hashedPassword 
     });
     return user;
 }

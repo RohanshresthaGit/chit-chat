@@ -1,6 +1,6 @@
-import { verifyToken } from '../services/jwt.services';
+import { verifyToken } from '../services/jwt.services.js';
 
-export const authenticate = async (req, res, next) => {
+export default async function authenticate(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {

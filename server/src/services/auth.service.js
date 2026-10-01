@@ -48,7 +48,8 @@ const loginUser = async ({email, password}) => {
         throw new Error("Invalid password");
     }
     const token = generateToken({
-      userId:  user._id
+      id:  user._id,
+      email: user.email
     });
     return {
         id: user._id,
@@ -59,7 +60,33 @@ const loginUser = async ({email, password}) => {
 
 
 }
+
+const refreshToken = async (token) => {
+    if(!token) {
+        throw new Error("Token is required");
+    }
+    const data = await verifyToken(token);
+    if(!data) {
+        throw new Error("Invalid token");
+    }
+    const user = await User.findById(data.userId);
+    if(!user) {
+        throw new Error("User does not exist");
+    }
+    const newToken = generateToken({
+        id: user._id,
+        email: user.email
+    });
+    return {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        token: newToken
+    };
+}
+
 export default {
     registerUser,
-    loginUser
+    loginUser,
+    refreshToken
 }

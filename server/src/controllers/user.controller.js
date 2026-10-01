@@ -36,7 +36,27 @@ const login = async (req, res) => {
     }
 }
 
+const refreshToken = async (req, res ) => {
+    try{
+        const { token } = req.body;
+        if(!token) {
+            throw new Error("Token is required");
+        }
+        const data = await authService.refreshToken(token);
+        return res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 export default {
     register,
-    login
+    login,
+    refreshToken
 }

@@ -3,7 +3,7 @@ import { generateToken } from "./jwt.services.js";
 
 const getProfileById = async (userId) => {
     const user = await User.findById(userId);
-    if(!user) {
+    if (!user) {
         throw new Error("User not found");
     }
     return {
@@ -18,23 +18,31 @@ const getProfileById = async (userId) => {
 
 
 const updateProfile = async (userId, { fullName, email, profileImage, bio, links }) => {
+    if (!fullName && !email && !profileImage && !bio && !links) {
+        throw new Error("At least one field is required to update the profile");
+    }
+
     const user = await User.findById(userId);
-    if(!user) {
+    if (!user) {
         throw new Error("User not found");
     }
-    if(fullName) {
+    if (fullName) {
         user.fullName = fullName;
     }
-    if(email) {
+    if (email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser && existingUser._id.toString() !== userId) {
+            throw new Error("Email is already in use");
+        }
         user.email = email;
     }
-    if(profileImage) {
+    if (profileImage) {
         user.profileImage = profileImage;
     }
-    if(bio) {
+    if (bio) {
         user.bio = bio;
     }
-    if(links) {
+    if (links) {
         user.links = links;
     }
 
@@ -44,7 +52,7 @@ const updateProfile = async (userId, { fullName, email, profileImage, bio, links
 
 const deleteProfile = async (userId) => {
     const user = await User.findByIdAndDelete(userId);
-    if(!user) {
+    if (!user) {
         throw new Error("User not found");
     }
     return true;

@@ -5,6 +5,7 @@ import morgon from "morgan";
 
 import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import followRoutes from "./routes/follow.routes.js";
 import authenticate from "./middleware/auth.middleware.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 
@@ -27,6 +28,7 @@ app.get("/api/v1/health", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", authenticate,  profileRoutes);
+app.use("/api/v1/follow", authenticate, followRoutes);
 app.use(errorMiddleware);
 
 export default app;

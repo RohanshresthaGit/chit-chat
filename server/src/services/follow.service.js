@@ -95,6 +95,92 @@ const cancelFriendRequest = async (senderId, receiverId) => {
     return true;
 }
 
+const findFriends = async (userId, searchTerm = "", page = 1, limit = 10) => {
+    page = Math.max(1, Number(page) || 1);
+    limit = Math.min(50, Math.max(1, Number(limit) || 10));
+
+    const skip = (page - 1) * limit;
+
+    // 1. Find existing friendships
+    const friendships = await Friend.find({
+        $or: [
+            { userId },
+            { friendId: userId }
+        ]
+    }).populate([
+        {
+            path: "userId",
+            select: "fullName image"
+        },
+        {
+            path: "friendId",
+            select: "fullName image"
+        }
+    ]);
+
+    // 2. Extract friend IDs
+    const friendIds = friendships.map(friend =>
+        friend.userId._id.toString() === userId.toString()
+            ? friend.friendId._id
+            : friend.userId._id
+    );
+
+    // 3. Build search filter
+    const filter = {
+        _id: { $nin: [userId, ...friendIds] }
+    };
+
+    // Apply search only when searchTerm exists
+    if (searchTerm.trim()) {
+        const escapedSearch = searchTerm.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+        );
+
+        filter.$or = [
+            {
+                fullName: {
+                    $regex: escapedSearch,
+                    $options: "i"
+                }
+            },
+            {
+                email: {
+                    $regex: escapedSearch,
+                    $options: "i"
+                }
+            }
+        ];
+    }
+
+    // 4. Fetch users and count in parallel
+    const [users, totalUsers] = await Promise.all([
+        User.find(filter)
+            .select("fullName image")
+            .sort({ fullName: 1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+
+        User.countDocuments(filter)
+    ]);
+
+    // 5. Pagination
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    return {
+        users,
+        pagination: {
+            totalUsers,
+            currentPage: page,
+            limit,
+            totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
+        }
+    };
+};
+
 const getFollowersRequests = async (userId, page = 1, limit = 10) => {
     page = Math.max(1, Number(page) || 1);
     limit = Math.min(50, Math.max(1, Number(limit) || 10));
@@ -114,7 +200,7 @@ const getFollowersRequests = async (userId, page = 1, limit = 10) => {
         FriendRequest.countDocuments(filter)
     ]);
 
-    const toatlPages = Math.ceil(totalRequests / limit);
+    const totalPages = Math.ceil(totalRequests / limit);
 
 
     return {
@@ -124,7 +210,7 @@ const getFollowersRequests = async (userId, page = 1, limit = 10) => {
             currentPage: page,
             limit,
             totalPages: totalPages,
-            hasNextPage: page * limit < totalRequests,
+            hasNextPage: page < totalPages,
             hasPrevPage: page > 1
         }
     };
@@ -137,5 +223,6 @@ export default {
     acceptFollowRequest,
     removeFollowRequest,
     cancelFriendRequest,
-    getFollowersRequests
-}   
+    getFollowersRequests,
+    findFriends,
+}

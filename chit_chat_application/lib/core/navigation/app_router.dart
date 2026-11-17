@@ -1,5 +1,6 @@
 import 'package:chit_chat_application/core/navigation/app_routes.dart';
 import 'package:chit_chat_application/core/navigation/route_guards.dart';
+import 'package:chit_chat_application/core/navigation/widgets/app_dialog_route.dart';
 import 'package:chit_chat_application/core/navigation/widgets/app_navigation_shell.dart';
 import 'package:chit_chat_application/features/dummy/chats_page.dart';
 import 'package:chit_chat_application/features/error/presentation/pages/not_found_page.dart';
@@ -89,17 +90,13 @@ class AppRouter {
         ],
       ),
 
-      GoRoute(
+      AppDialogRoute<bool>(
         path: '/delete-chat',
         name: 'deleteChat',
-        parentNavigatorKey: rootNavigatorKey,
-        pageBuilder: (context, state) {
-          return RouteTransitions.dialog<bool>(
-            key: state.pageKey,
-            child: const DeleteChatDialog(),
-          );
+        builder: (context, state) {
+          return const DeleteChatDialog();
         },
-      ),
+      ).build(parentNavigatorKey: rootNavigatorKey),
     ],
     errorBuilder: (context, state) {
       return const NotFoundPage();

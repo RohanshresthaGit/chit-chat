@@ -1,4 +1,5 @@
 import 'package:chit_chat_application/core/di/injection.dart';
+import 'package:chit_chat_application/core/navigation/app_router.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,12 +13,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: AppRouter.router,
       title: 'Chit Chat',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
     );
   }
 }
